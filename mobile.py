@@ -13,17 +13,9 @@ from screen_shot import take_screenshot_and_save
 from ppadb.client import Client as AdbClient
 
 import json
-import torch
 import base64
 import os
 import time
-
-# 获取processor
-def get_processor():
-    model_path = snapshot_download(repo_id='Qwen/Qwen2.5-VL-7B-Instruct',
-                                   cache_dir='D:/Qwen_demo/test/mobile_demo/model')
-    processor = AutoProcessor.from_pretrained(model_path)
-    return processor
 
 # 获取client
 def get_client():
@@ -34,6 +26,20 @@ def get_client():
     return device
 
 
+# 获取processor
+def get_processor():
+
+    model_path = snapshot_download(
+        # 模型仓库地址
+        repo_id='Qwen/Qwen2.5-VL-7B-Instruct',
+        # 模型安装路径
+        cache_dir='D:/Qwen_demo/test/mobile_demo/model')
+
+    # 加载处理器
+    processor = AutoProcessor.from_pretrained(model_path)
+    return processor
+
+
 
 # 图片编码
 def encode_image(image_path):
@@ -42,7 +48,8 @@ def encode_image(image_path):
 
 
 def mobile_action(user_quest,screenshot,model_id, device, processor,step=None):
-# 操作历史可以按照以下方式组织：step x: [action]；step x+1: [action]
+
+    # 操作历史可以按照以下方式组织：step x: [action]；step x+1: [action]
     user_query = f"{user_quest}\nTask progress (You have done the following operation on the current device):{step} "
 
     client = OpenAI(
@@ -51,7 +58,7 @@ def mobile_action(user_quest,screenshot,model_id, device, processor,step=None):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
 
-    # The resolution of the device will be written into the system prompt.
+    # 图像信息处理.
     dummy_image = Image.open(screenshot)
     resized_height, resized_width  = smart_resize(dummy_image.height,
         dummy_image.width,
@@ -62,7 +69,7 @@ def mobile_action(user_quest,screenshot,model_id, device, processor,step=None):
         cfg={"display_width_px": resized_width, "display_height_px": resized_height}, device=device
     )
 
-
+    # 图片编码
     base64_image = encode_image(screenshot)
 
     # 构建message
@@ -103,7 +110,8 @@ def mobile_action(user_quest,screenshot,model_id, device, processor,step=None):
         model = model_id,
         messages = messages,
     )
-    #
+
+    #模型输出信息处理
     output_text = completion.choices[0].message.content
     print(completion)
     action = json.loads(output_text.split('<tool_call>\n')[1].split('\n</tool_call>')[0])
@@ -138,3 +146,5 @@ def mian(local_directory='D:/Qwen_demo/test/mobile_demo/assets/screenshot',scree
         steps += f'Step{str_step_num}: ' + str_step + ','
         step += 1
 
+if __name__ == '__main__':
+    mian()
