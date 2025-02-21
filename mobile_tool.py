@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Union, Tuple
 
 from qwen_agent.tools.base import BaseTool, register_tool
 

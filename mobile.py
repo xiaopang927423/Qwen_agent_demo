@@ -33,7 +33,7 @@ def get_processor():
         # 模型仓库地址
         repo_id='Qwen/Qwen2.5-VL-7B-Instruct',
         # 模型安装路径
-        cache_dir='D:/Qwen_demo/test/mobile_demo/model')
+        cache_dir='')
 
     # 加载处理器
     processor = AutoProcessor.from_pretrained(model_path)
@@ -113,14 +113,13 @@ def mobile_action(user_quest,screenshot,model_id, device, processor,step=None):
 
     #模型输出信息处理
     output_text = completion.choices[0].message.content
-    print(completion)
     action = json.loads(output_text.split('<tool_call>\n')[1].split('\n</tool_call>')[0])
     if not action['arguments'] == 'terminate' :
         mobile_use.call(action['arguments'])
         time.sleep(5)
     return action
 
-def mian(local_directory='D:/Qwen_demo/test/mobile_demo/assets/screenshot',screenshot_name='screenshot.png'):
+def mian(local_directory='',screenshot_name='screenshot.png'):
     processor = get_processor()
     device = get_client()
     screen_shot = take_screenshot_and_save(device, local_directory, screenshot_name)
@@ -137,6 +136,7 @@ def mian(local_directory='D:/Qwen_demo/test/mobile_demo/assets/screenshot',scree
             if next_action['arguments']['status'] == 'success':
                 print('操作成功')
                 break
+
             else:
                 print('操作失败')
                 break
